@@ -40,6 +40,8 @@ public class LinearRegression {
 		lr.buildModel();
 		double[][] input1 = {{1},{2},{3},{4},{5},{100}};
 		lr.predict(input1);
+		
+		System.out.println(lr.calculateError(input, output));
 	}
 	
 	/**
@@ -105,6 +107,25 @@ public class LinearRegression {
 			System.out.println();
 		}
 		return OutputMatrix;
+	}
+	
+	public double calculateError(double[][] testdataX, double[][] testdataY){
+		//Append the vector of ones
+		double[][] X = new double[testdataX.length][testdataX[0].length+1];
+		for(int i=0;i<X.length;i++){
+			for(int j=0;j<X[i].length;j++){
+				if(j==0){
+					X[i][j] = 1;
+				}else{
+					X[i][j] = testdataX[i][j-1];
+				}
+			}
+		}
+		
+		Matrix Xtest = new Matrix(X);
+		Matrix YFromLearntModel = Xtest.times(Theta);
+		
+		return YFromLearntModel.normF()/(2*testdataX.length);
 	}
 
 }
