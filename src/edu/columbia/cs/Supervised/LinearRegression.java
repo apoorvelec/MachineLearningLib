@@ -5,7 +5,7 @@ import Jama.Matrix;
 /**
  * Builds a linear regression model out of the given data.
  * Data should be given as input in the following way,
- * <p> Linear Regression is falls under supervised learning
+ * <p> Linear Regression falls under supervised learning
  * algorithms. Hence a double[][] <b>Input</b> and a double[][] 
  * <b>Output</b> matrix must be given by the user. The double[][] <b>Input</b>
  * has dimensions MxN, where M are the number of data-points and
@@ -33,12 +33,12 @@ public class LinearRegression {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		double[][] input = {{1},{2},{3},{4}};
+		double[][] input = {{1,2},{2,3},{3,4},{4,5}};
 		double[][] output = {{1},{2},{3},{4}};
 		
 		LinearRegression lr = new LinearRegression(input,output);
 		lr.buildModel();
-		double[][] input1 = {{1},{2},{3},{4},{5},{100}};
+		double[][] input1 = {{1,2},{2,3},{3,4},{4,5},{5,6},{100,101}};
 		lr.predict(input1);
 		
 		System.out.println(lr.calculateError(input, output));
@@ -127,5 +127,31 @@ public class LinearRegression {
 		
 		return YFromLearntModel.normF()/(2*testdataX.length);
 	}
+	
+	/*
+	 * All the getters and setters go here
+	 */
 
+	public Matrix getInputData(){
+		return this.InputData;
+	}
+	
+	public Matrix getOutputData(){
+		return this.OutputData;
+	}
+	
+	public Matrix getTheta(){
+		return this.Theta;
+	}
+	
+	public void setInputData(double[][] inputdata){
+		Matrix input = new Matrix(inputdata);
+		this.InputData = input;
+	}
+	
+	public void setOutputData(double[][] outputdata){
+		Matrix output = new Matrix(outputdata);
+		this.OutputData = output;
+	}
+	
 }

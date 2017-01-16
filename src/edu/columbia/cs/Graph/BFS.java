@@ -17,9 +17,7 @@ public class BFS {
 	
 	public void bfsSearch(int node){
 		double adjmat[][] = this.INPUTGRAPH.getAdjacencyMatrix();
-		for(int i=0;i<){
-			
-		}
+		
 	}
 	
 }
