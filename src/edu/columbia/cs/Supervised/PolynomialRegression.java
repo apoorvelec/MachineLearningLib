@@ -36,10 +36,23 @@ public class PolynomialRegression {
 	 */
 	private Matrix Theta;
 	
+	private Matrix ExpandedInputData;
+	
+	private ArrayList<String> ExpansionOrder;
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
-		System.out.println(createAllMultinomialCoefficients(2,4));
+		
+		double[][] input = {{1},{2},{3},{4}};
+		double[][] output = {{1},{4},{9},{16}};
+		
+		PolynomialRegression pr = new PolynomialRegression(input,output);
+		pr.buildModel(3);
+		double[][] input1 = {{1},{2},{3},{4},{5},{100}};
+		pr.predict(input1);
+		
+		//System.out.println(lr.calculateError(input, output));
+		
 	}
 	
 	/**
@@ -60,9 +73,93 @@ public class PolynomialRegression {
 				}
 			}
 		}
+		this.InputData = new Matrix(X);
+		this.OutputData = new Matrix(output);
 	}
 	
-	public static Set<String> createAllMultinomialCoefficients(int polynomialDegree
+	public void buildModel(int polynomialDegree){
+		// create the expansion order
+		this.ExpansionOrder = new ArrayList<String>(
+				createAllMultinomialCoefficients(polynomialDegree, 
+						this.InputData.getColumnDimension()-1));
+		// Expand the InputData Matrix and store in ExpandedInputData
+		double[][] expandedMat = 
+				new double[this.InputData.getRowDimension()][this.InputData.getColumnDimension()+this.ExpansionOrder.size()];
+		
+		for(int i=0;i<expandedMat.length;i++){
+			for(int j=0;j<expandedMat[i].length;j++){
+				if(j<this.InputData.getColumnDimension()){
+					expandedMat[i][j] = this.InputData.get(i, j);
+				}else{
+					String str = this.ExpansionOrder.get(j-this.InputData.getColumnDimension());
+					
+					double expandedValue = 1; //init
+					for(int k=0;k<str.length();k++){
+						expandedValue = expandedValue*
+								Math.pow(this.InputData.get(i, k+1), 
+										Character.getNumericValue(str.charAt(k)));
+					}
+					expandedMat[i][j] = expandedValue;
+				}
+			}
+		}
+		this.ExpandedInputData = new Matrix(expandedMat);
+		
+		// Now with the expanded matrix, calculate the theta
+		
+		Matrix ExpandedInputDataTranspose = this.ExpandedInputData.transpose();
+		this.Theta = ExpandedInputDataTranspose.times(this.ExpandedInputData).inverse().
+				times(ExpandedInputDataTranspose).times(this.OutputData); // The popular linear regression equation
+	}
+	
+	public Matrix predict(double[][] input){
+		double[][] X = new double[input.length][input[0].length+1];
+		for(int i=0;i<X.length;i++){
+			for(int j=0;j<X[i].length;j++){
+				if(j==0){
+					X[i][j] = 1;
+				}else{
+					X[i][j] = input[i][j-1];
+				}
+			}
+		}
+		Matrix InputMatrix = new Matrix(X);
+		
+		// expand the InputMatrix
+		double[][] expandedMat = 
+				new double[InputMatrix.getRowDimension()][InputMatrix.getColumnDimension()+this.ExpansionOrder.size()];
+		
+		for(int i=0;i<expandedMat.length;i++){
+			for(int j=0;j<expandedMat[i].length;j++){
+				if(j<InputMatrix.getColumnDimension()){
+					expandedMat[i][j] = InputMatrix.get(i, j);
+				}else{
+					String str = this.ExpansionOrder.get(j-InputMatrix.getColumnDimension());
+					
+					double expandedValue = 1; //init
+					for(int k=0;k<str.length();k++){
+						expandedValue = expandedValue*
+								Math.pow(InputMatrix.get(i, k+1), 
+										Character.getNumericValue(str.charAt(k)));
+					}
+					expandedMat[i][j] = expandedValue;
+				}
+			}
+		}
+		Matrix ExpandedInputMatrix = new Matrix(expandedMat);
+		
+		Matrix OutputMatrix = ExpandedInputMatrix.times(this.Theta);
+		double[][] output = OutputMatrix.getArray();
+		for(int i=0;i<output.length;i++){
+			for(int j=0;j<output[i].length;j++){
+				System.out.print(output[i][j]+" ");
+			}
+			System.out.println();
+		}
+		return OutputMatrix;
+	}
+	
+	private static Set<String> createAllMultinomialCoefficients(int polynomialDegree
 			, int numOfVars){
 		Set<String> AllCoefficients = new HashSet<String>(); // Result var init
 		
@@ -81,6 +178,20 @@ public class PolynomialRegression {
 			partitions.add(i, processedStr);
 		}
 		
+		ArrayList<String> procPartitions = new ArrayList<String>();
+		if(polynomialDegree>numOfVars){
+			// then remove those partitions whose length is more than numOfVars
+			for(int i=0;i<partitions.size();i++){
+				if(partitions.get(i).length()>numOfVars){
+					continue;
+				}else{
+					procPartitions.add(partitions.get(i));
+				}
+			}
+		}
+		
+		partitions.removeAll(partitions);
+		partitions.addAll(procPartitions);
 		// For each partition, generate all permutations and return final result
 		for(int i=0;i<partitions.size();i++){
 			String str = partitions.get(i);
